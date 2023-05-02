@@ -1,36 +1,58 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   lambda-authorizer
+  SAM Template for lambda-authorizer
 
-  Sample SAM Template for lambda-authorizer
-  
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 500
     MemorySize: 128
+    Runtime: nodejs14.x
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        DEFAULT_DB_NAME: !Ref Table
+        REGION_NAME: !Ref Region
+Parameters:
+  Table:
+    Type: String
+    Default: DefaultDB
+  Region:
+    Type: String
+    Default: ap-south-1
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  ListAllEntriesFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello-world/
-      Handler: app.lambdaHandler
-      Runtime: nodejs14.x
-      Architectures:
-        - x86_64
+      CodeUri: handlers/
+      Handler: app.listAllEntries
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DefaultDBTable
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        CreateStudent:
+          Type: Api
           Properties:
-            Path: /hello
+            Path: /other
             Method: get
 
+  DefaultDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref Table
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
