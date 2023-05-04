@@ -106,6 +106,86 @@ exports.getEntry = async (event, context) => {
 exports.updateEntry = async (event, context) => {
     const timestamp = new Date().getTime();
     let body = {};
+    const data = JSON.parse(event.body);
+    console.log({ data });
+    let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    //#region  Error check to see if item with given ID exists
+    const getItemParams = {
+        TableName: ENTRY_DB,
+        Key: {
+            id: event.pathParameters.id
+        }
+    };
+
+    console.log("Hello from Get before update");
+
+    try {
+        const getItemResult = await dynamoDb.get(getItemParams).promise();
+        if (getItemResult.Item == undefined || getItemResult.Item == null) {
+            statusCode = 404;
+            body.message = `Item with id ${event.pathParameters.id} not found`;
+            return {
+                statusCode,
+                body: JSON.stringify(body),
+                headers,
+            };
+        }
+    } catch (err) {
+        statusCode = 400;
+        body.message = `Unable to update item with id ${event.pathParameters.id}: ${err.message}`;
+        console.log(err);
+        return {
+            statusCode,
+            body: JSON.stringify(body),
+            headers,
+        };
+    }
+    //#endregion
+
+    // Update the item
+    const updateItemParams = {
+        TableName: ENTRY_DB,
+        Key: {
+            id: event.pathParameters.id
+        },
+        UpdateExpression: "SET #name = :name, #updatedAt = :updatedAt",
+        ExpressionAttributeNames: {
+            "#name": "name",
+            "#updatedAt": ":updatedAt"
+        },
+        ExpressionAttributeValues: {
+            ":name": data.name,
+            ":updatedAt": timestamp
+        },
+        ReturnValues: "ALL_NEW"
+    };
+
+    console.log("Hello from update");
+
+    try {
+        body = await dynamoDb.update(updateItemParams).promise();
+        body.message = `Item with id ${event.pathParameters.id} updated successfully`;
+    } catch (err) {
+        statusCode = 400;
+        body.message = `Unable to update item with id ${event.pathParameters.id}: ${err.message}`;
+        console.log(err);
+    } finally {
+        body = JSON.stringify(body.Attributes);
+    }
+
+    return {
+        statusCode,
+        body,
+        headers,
+    };
+};
+
+exports.deleteEntry = async (event, context) => {
+    let body = {};
     let statusCode = 200;
     const headers = {
         "Content-Type": "application/json",
@@ -142,48 +222,6 @@ exports.updateEntry = async (event, context) => {
     }
     //#endregion
 
-    // Update the item
-    const updateItemParams = {
-        TableName: ENTRY_DB,
-        Key: {
-            id: event.pathParameters.id
-        },
-        UpdateExpression: "SET #name = :name, #updatedAt = :updatedAt",
-        ExpressionAttributeNames: {
-            "#name": "name"
-        },
-        ExpressionAttributeValues: {
-            ":name": event.body.name,
-            ":updatedAt": timestamp
-        },
-        ReturnValues: "ALL_NEW"
-    };
-
-    try {
-        body = await dynamoDb.update(updateItemParams).promise();
-        body.message = `Item with id ${event.pathParameters.id} updated successfully`;
-    } catch (err) {
-        statusCode = 400;
-        body.message = `Unable to update item with id ${event.pathParameters.id}: ${err.message}`;
-        console.log(err);
-    } finally {
-        body = JSON.stringify(body.Attributes);
-    }
-
-    return {
-        statusCode,
-        body,
-        headers,
-    };
-};
-
-exports.deleteEntry = async (event, context) => {
-    let body = {};
-    let statusCode = 200;
-    const headers = {
-        "Content-Type": "application/json",
-    };
-
     const params = {
         TableName: ENTRY_DB,
         Key: {
@@ -193,17 +231,13 @@ exports.deleteEntry = async (event, context) => {
 
     try {
         await dynamoDb.delete(params).promise();
+        body.message = `Item with id ${event.pathParameters.id} deleted successfully`;
     } catch (err) {
         statusCode = 400;
         body.message = `Unable to delete item with id ${event.pathParameters.id}: ${err.message}`;
         console.log(err);
+
     } finally {
-        if (body.Item == undefined || body.Item == null) {
-            body.message = `Item with id ${event.pathParameters.id} DNE`;
-        }
-        else {
-            body.message = `Item with id ${event.pathParameters.id} deleted successfully`;
-        }
         body = JSON.stringify(body);
     }
 

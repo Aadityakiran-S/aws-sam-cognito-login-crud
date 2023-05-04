@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "aaditya-lambda-authorizer"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-r3wf7rt6ikj8"
+s3_prefix = "aaditya-lambda-authorizer"
+region = "ap-south-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Table=\"EntryDBTable\" Region=\"ap-south-1\""
+image_repositories = []

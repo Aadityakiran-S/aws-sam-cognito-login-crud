@@ -81,14 +81,14 @@ Resources:
         CreateEntry:
           Type: Api
           Properties:
-            Path: /entry
+            Path: /entry/{id}
             Method: put
 
   DeleteEntryFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
-      Handler: app.deleteStudent
+      Handler: app.deleteEntry
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref EntryDBTable
@@ -106,19 +106,16 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        - AttributeName: name
-          AttributeType: S
+        # - AttributeName: name
+        #   AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 
 Outputs:
   LambdaAuthorizerApi:
     Description: "API Gateway endpoint URL for Prod stage for LambdaAuthorizer function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/lambda-authorizer/"
-  LambdaAuthorizerFunction:
-    Description: "LambdaAuthorizer Lambda Function ARN"
-    Value: !GetAtt LambdaAuthorizerFunction.Arn
-  LambdaAuthorizerFunctionIamRole:
-    Description: "Implicit IAM Role created for LambdaAuthorizer function"
-    Value: !GetAtt LambdaAuthorizerFunctionRole.Arn
