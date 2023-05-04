@@ -13,7 +13,7 @@ Globals:
       - x86_64
     Environment:
       Variables:
-        DEFAULT_DB_NAME: !Ref Table
+        ENTRY_DB: !Ref Table
         REGION_NAME: !Ref Region
 Parameters:
   Table:
