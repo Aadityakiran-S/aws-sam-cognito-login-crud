@@ -18,7 +18,7 @@ Globals:
 Parameters:
   Table:
     Type: String
-    Default: DefaultDB
+    Default: EntryDBTable
   Region:
     Type: String
     Default: ap-south-1
@@ -27,19 +27,79 @@ Resources:
   ListAllEntriesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: handlers/
+      CodeUri: handler/
       Handler: app.listAllEntries
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref DefaultDBTable
+            TableName: !Ref EntryDBTable
       Events:
-        CreateStudent:
+        CreateEntry:
           Type: Api
           Properties:
-            Path: /other
+            Path: /entry
             Method: get
 
-  DefaultDBTable:
+  CreateEntryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: app.createEntry
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntryDBTable
+      Events:
+        CreateEntry:
+          Type: Api
+          Properties:
+            Path: /entry
+            Method: post
+
+  GetEntryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: app.getEntry
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntryDBTable
+      Events:
+        CreateEntry:
+          Type: Api
+          Properties:
+            Path: /entry/{id}
+            Method: get
+
+  UpdateEntryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: app.updateEntry
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntryDBTable
+      Events:
+        CreateEntry:
+          Type: Api
+          Properties:
+            Path: /entry
+            Method: put
+
+  DeleteEntryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: app.deleteStudent
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntryDBTable
+      Events:
+        CreateEntry:
+          Type: Api
+          Properties:
+            Path: /entry/{id}
+            Method: delete
+
+  EntryDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Ref Table
@@ -53,12 +113,12 @@ Resources:
           KeyType: HASH
 
 Outputs:
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  LambdaAuthorizerApi:
+    Description: "API Gateway endpoint URL for Prod stage for LambdaAuthorizer function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/lambda-authorizer/"
+  LambdaAuthorizerFunction:
+    Description: "LambdaAuthorizer Lambda Function ARN"
+    Value: !GetAtt LambdaAuthorizerFunction.Arn
+  LambdaAuthorizerFunctionIamRole:
+    Description: "Implicit IAM Role created for LambdaAuthorizer function"
+    Value: !GetAtt LambdaAuthorizerFunctionRole.Arn
