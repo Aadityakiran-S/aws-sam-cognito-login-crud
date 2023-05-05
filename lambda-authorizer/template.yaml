@@ -99,6 +99,55 @@ Resources:
             Path: /entry/{id}
             Method: delete
 
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: CognitoAuthUserPool
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: false
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  CognitoAuthApi:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: CognitoAuthApi
+      StageName: Prod
+      Cors: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt "UserPool.Arn"
+
+  MyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: lambda.handler
+      Runtime: nodejs12.x
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /
+            Method: GET
+
   EntryDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -106,8 +155,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        # - AttributeName: name
-        #   AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
