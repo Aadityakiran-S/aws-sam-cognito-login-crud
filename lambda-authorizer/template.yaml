@@ -134,11 +134,11 @@ Resources:
           CognitoAuthorizer:
             UserPoolArn: !GetAtt "UserPool.Arn"
 
-  MyFunction:
+  CognitoAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./src
-      Handler: lambda.handler
+      CodeUri: handler/
+      Handler: app.cognitoAuth
       Runtime: nodejs12.x
       Events:
         Root:

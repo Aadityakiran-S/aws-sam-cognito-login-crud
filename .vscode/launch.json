@@ -3,6 +3,20 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
+            "name": "lambda-authorizer:MyFunction",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/lambda-authorizer/template.yaml",
+                "logicalId": "MyFunction"
+            },
+            "lambda": {
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
             "name": "API lambda-authorizer:CreateStudentFunction",
             "invokeTarget": {
                 "target": "api",
