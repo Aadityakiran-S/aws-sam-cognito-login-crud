@@ -99,10 +99,10 @@ Resources:
             Path: /entry/{id}
             Method: delete
 
-  UserPool:
+  LambdaAuthUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: CognitoAuthUserPool
+      UserPoolName: LambdaAuthUserPool
       UsernameAttributes:
         - email
       Policies:
@@ -113,40 +113,41 @@ Resources:
           Name: email
           Required: false
 
-  UserPoolClient:
+  LambdaAuthUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      UserPoolId: !Ref UserPool
+      UserPoolId: !Ref LambdaAuthUserPool
       GenerateSecret: false
       ExplicitAuthFlows:
         - ALLOW_USER_PASSWORD_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
 
-  CognitoAuthApi:
-    DependsOn: UserPool
+  LambdaAuthCognitoAuthApi:
+    # DependsOn: UserPool
+    DependsOn: LambdaAuthUserPool
     Type: AWS::Serverless::Api
     Properties:
-      Name: CognitoAuthApi
+      Name: LambdaAuthCognitoAuthApi
       StageName: Prod
       Cors: "'*'"
       Auth:
         Authorizers:
           CognitoAuthorizer:
-            UserPoolArn: !GetAtt "UserPool.Arn"
+            UserPoolArn: !GetAtt "LambdaAuthUserPool.Arn"
 
-  CognitoAuthFunction:
+  LambdaAuthCognitoLoginFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
-      Handler: app.cognitoAuth
-      Runtime: nodejs12.x
+      Handler: app.cognitoLogin
+      Runtime: nodejs14.x
       Events:
         Root:
           Type: Api
           Properties:
-            RestApiId: !Ref MyApi
-            Path: /
-            Method: GET
+            RestApiId: !Ref LambdaAuthCognitoAuthApi
+            Path: /login
+            Method: POST
 
   EntryDBTable:
     Type: AWS::DynamoDB::Table

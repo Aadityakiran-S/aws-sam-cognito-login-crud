@@ -247,3 +247,19 @@ exports.deleteEntry = async (event, context) => {
         headers,
     };
 };
+
+exports.cognitoLogin = async (event, context) => {
+    let body = {};
+    let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    body.message = JSON.stringify("Login successfull");
+
+    return {
+        statusCode,
+        body,
+        headers,
+    };
+}
