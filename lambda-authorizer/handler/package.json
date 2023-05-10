@@ -7,8 +7,10 @@
   "author": "SAM CLI",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1371.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.329.0",
+    "aws-sdk": "^2.1375.0",
     "axios": "^0.21.1",
+    "dotenv": "^16.0.3",
     "uuid": "^9.0.0"
   },
   "scripts": {

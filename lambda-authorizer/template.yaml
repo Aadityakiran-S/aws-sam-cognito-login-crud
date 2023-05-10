@@ -123,7 +123,6 @@ Resources:
         - ALLOW_REFRESH_TOKEN_AUTH
 
   LambdaAuthCognitoAuthApi:
-    # DependsOn: UserPool
     DependsOn: LambdaAuthUserPool
     Type: AWS::Serverless::Api
     Properties:
