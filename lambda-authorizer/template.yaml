@@ -138,14 +138,26 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: handler/
-      Handler: app.cognitoLogin
+      Handler: app.logInUser
       Runtime: nodejs14.x
       Events:
         Root:
           Type: Api
           Properties:
-            RestApiId: !Ref LambdaAuthCognitoAuthApi
             Path: /login
+            Method: POST
+
+  LambdaAuthCognitoSignUpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: app.signUpUser
+      Runtime: nodejs14.x
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Path: /signup
             Method: POST
 
   EntryDBTable:

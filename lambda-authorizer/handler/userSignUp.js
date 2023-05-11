@@ -39,7 +39,7 @@ async function signUpAndConfirm(signUpParams, confirmParams) {
         console.log(signUpResult);
 
         const confirmResult = await new Promise((resolve, reject) => {
-            cognitoidentityserviceprovider.adminConfirmSignUp(confirmationParams, function (err, data) {
+            cognitoidentityserviceprovider.adminConfirmSignUp(confirmParams, function (err, data) {
                 if (err) {
                     console.log(err, err.stack);
                     reject(err);

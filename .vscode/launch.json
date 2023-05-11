@@ -3,6 +3,20 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
+            "name": "lambda-authorizer:LambdaAuthCognitoLoginFunction",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/lambda-authorizer/template.yaml",
+                "logicalId": "LambdaAuthCognitoLoginFunction"
+            },
+            "lambda": {
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
             "name": "lambda-authorizer:MyFunction",
             "invokeTarget": {
                 "target": "template",

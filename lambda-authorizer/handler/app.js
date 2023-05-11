@@ -2,6 +2,14 @@ const AWS = require("aws-sdk");
 const ENTRY_DB = process.env.ENTRY_DB;
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const uuid = require('uuid');
+require('dotenv').config();
+
+//AWS credential config
+AWS.config.update({ region: 'ap-south-1' });
+AWS.config.credentials.accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+AWS.config.credentials.secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+var client = new AWS.CognitoIdentityServiceProvider();
 
 exports.listAllEntries = async (event, context) => {
     const timestamp = new Date().getTime();
@@ -248,14 +256,87 @@ exports.deleteEntry = async (event, context) => {
     };
 };
 
-exports.cognitoLogin = async (event, context) => {
+exports.logInUser = async (event, context) => {
     let body = {};
     let statusCode = 200;
     const headers = {
         "Content-Type": "application/json",
     };
+    const data = JSON.parse(event.body);
 
-    body.message = JSON.stringify("Login successfull");
+    client.initiateAuth(data, function (err, data) {
+        if (err) {
+            console.log(err, err.stack);
+            statusCode = 500;
+            body = JSON.stringify(err);
+            return {
+                statusCode,
+                body,
+                headers,
+            };
+        } else {
+            body = JSON.stringify(data);
+            console.log(data);
+        }
+    });
+
+    return {
+        statusCode,
+        body,
+        headers,
+    };
+}
+
+exports.signUpUser = async (event, context) => {
+    let body = {};
+    let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+    };
+    const data = JSON.parse(event.body);
+
+    try {
+        const signUpResult = await new Promise((resolve, reject) => {
+            client.signUp(data.signUpParams, function (err, data) {
+                if (err) {// an error occurred
+                    console.log(err, err.stack);
+                    statusCode = 500;
+                    reject(err);
+                }
+                else {// successful response
+                    console.log(data);
+                    resolve(data);
+                }
+            });
+        })
+        console.log(signUpResult);
+        body.signUpResult = JSON.stringify(signUpResult);
+
+        const confirmResult = await new Promise((resolve, reject) => {
+            client.adminConfirmSignUp(data.confirmParams, function (err, data) {
+                if (err) {
+                    console.log(err, err.stack);
+                    statusCode = 500;
+                    reject(err);
+                } else {
+                    console.log(data);
+                    resolve(data);
+                }
+            });
+        });
+        console.log(confirmResult);
+        body.confirmResult = JSON.stringify(confirmResult);
+    }
+    catch (err) {
+        console.log(err, err.stack);
+        statusCode = 500;
+        body = JSON.stringify(err);
+        return {
+            statusCode,
+            body,
+            headers,
+        }
+    }
 
     return {
         statusCode,
