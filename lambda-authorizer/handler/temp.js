@@ -1,32 +1,59 @@
 const AWS = require('aws-sdk');
 require('dotenv').config();
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.REGION
-});
+AWS.config.update({ region: 'ap-south-1' });
+AWS.config.credentials.accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+AWS.config.credentials.secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
-const { CognitoIdentityProviderClient, AdminCreateUserCommand } = require("@aws-sdk/client-cognito-identity-provider");
-const { config } = require('chai');
+var cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider();
 
-const client = new CognitoIdentityProviderClient(config);
-
-const params = {
-    UserPoolId: 'ap-south-1_LqLoBIsNc',
-    Username: 'aadityakiran.s@gmail.com',
-    DesiredDeliveryMediums: ['EMAIL'],
-    TemporaryPassword: 'password',
+var signupParams = {
+    ClientId: '7hmno6nbv8pat1sd3ikjfvh7sr', /* required */
+    Password: 'password', /* required */
+    Username: 'aadityakiran.s@inapp.com', /* required */
     UserAttributes: [
-        { Name: 'email', Value: 'aadityakiran.s@inapp.com' }
+        {
+            Name: 'email', /* required */
+            Value: 'aadityakiran.s@inapp.com'
+        },
     ]
 };
+var confirmationParams = {
+    UserPoolId: 'ap-south-1_LqLoBIsNc', /* required */
+    Username: 'aadityakiran.s@inapp.com', /* required */
+};
 
-const command = new AdminCreateUserCommand(params);
-let response;
-try {
-    response = client.send(command);
-} catch (error) {
-    console.log(error);
-    console.log(JSON.stringify(response));
+async function signUpAndConfirm(signUpParams, confirmParams) {
+    try {
+        const signUpResult = await new Promise((resolve, reject) => {
+            cognitoidentityserviceprovider.signUp(signUpParams, function (err, data) {
+                if (err) {// an error occurred
+                    console.log(err, err.stack);
+                    reject(err);
+                }
+                else {// successful response
+                    console.log(data);
+                    resolve(data);
+                }
+            });
+        })
+        console.log(signUpResult);
+
+        const confirmResult = await new Promise((resolve, reject) => {
+            cognitoidentityserviceprovider.adminConfirmSignUp(confirmationParams, function (err, data) {
+                if (err) {
+                    console.log(err, err.stack);
+                    reject(err);
+                } else {
+                    console.log(data);
+                    resolve(data);
+                }
+            });
+        });
+        console.log(confirmResult);
+    }
+    catch (err) {
+        console.log(err, err.stack);
+    }
 }
 
+signUpAndConfirm(signupParams, confirmationParams);
