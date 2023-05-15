@@ -1,2 +1,2 @@
-# aws-sam-lambda-authorizer
- Lambda authorizer and learning the basics of AWS SAM
+# aws-sam-cognito-login-crud
+ Cognito login and signup running in NodeJS using aws-sdk
